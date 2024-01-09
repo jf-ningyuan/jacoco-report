@@ -1,4 +1,5 @@
 import {JacocoFile} from './models/jacoco'
+import {Coverage} from './models/project'
 
 export const TAG = {
   SELF: '$',
@@ -102,4 +103,10 @@ export function getFilesWithCoverage(packages: any): JacocoFile[] {
     }
   }
   return files
+}
+
+export function getCoverageDifference(overall: Coverage, changed: Coverage): number {
+  const totalInstructions = overall.covered + overall.missed
+  const missed = changed.missed
+  return -(missed / totalInstructions) * 100
 }

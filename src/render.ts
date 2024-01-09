@@ -1,4 +1,5 @@
 import {Coverage, Emoji, MinCoverage, Module, Project} from './models/project'
+import {getCoverageDifference} from './util'
 
 export function getPRComment(
   project: Project,
@@ -114,12 +115,6 @@ function getFileTable(
       : `|${fileName}|${coveragePercentage}|${status}|`
     table = `${table}\n${row}`
   }
-}
-
-function getCoverageDifference(overall: Coverage, changed: Coverage): number {
-  const totalInstructions = overall.covered + overall.missed
-  const missed = changed.missed
-  return -(missed / totalInstructions) * 100
 }
 
 function getOverallTable(

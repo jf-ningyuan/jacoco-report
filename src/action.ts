@@ -7,12 +7,13 @@ import {parseBooleans} from 'xml2js/lib/processors'
 import * as glob from '@actions/glob'
 import {getProjectCoverage} from './process'
 import {getPRComment, getTitle} from './render'
-import {debug, getChangedLines} from './util'
+import {debug, getChangedLines, getCoverageDifference} from './util'
 import {Project} from './models/project'
 import {ChangedFile} from './models/github'
 
 export async function action(): Promise<void> {
   let continueOnError = true
+  let continueOnDecreasedCoverage = true
   try {
     const token = core.getInput('token')
     if (!token) {
@@ -44,6 +45,7 @@ export async function action(): Promise<void> {
     const failEmoji = core.getInput('fail-emoji')
 
     continueOnError = parseBooleans(core.getInput('continue-on-error'))
+    continueOnDecreasedCoverage = parseBooleans(core.getInput('continue-on-decreased-coverage'))
     const debugMode = parseBooleans(core.getInput('debug-mode'))
 
     const event = github.context.eventName
@@ -99,8 +101,10 @@ export async function action(): Promise<void> {
     )
 
     const skip = skipIfNoChanges && project.modules.length === 0
+    const coverageDiff = getCoverageDifference(project.overall, project.changed)
     if (debugMode) core.info(`skip: ${skip}`)
     if (debugMode) core.info(`prNumber: ${prNumber}`)
+    if (debugMode) core.info(`coverageDiff: ${coverageDiff}`)
     if (prNumber != null && !skip) {
       const emoji = {
         pass: passEmoji,
@@ -122,6 +126,9 @@ export async function action(): Promise<void> {
         client,
         debugMode
       )
+    }
+    if (!continueOnDecreasedCoverage && coverageDiff < 0) {
+      core.setFailed(`Coverage has been dropped for ${parseFloat(coverageDiff.toFixed(2))}%`)
     }
   } catch (error) {
     if (error instanceof Error) {

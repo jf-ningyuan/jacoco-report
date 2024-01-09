@@ -57,6 +57,7 @@ function action() {
     var _a, _b, _c, _d;
     return __awaiter(this, void 0, void 0, function* () {
         let continueOnError = true;
+        let continueOnDecreasedCoverage = true;
         try {
             const token = core.getInput('token');
             if (!token) {
@@ -82,6 +83,7 @@ function action() {
             const passEmoji = core.getInput('pass-emoji');
             const failEmoji = core.getInput('fail-emoji');
             continueOnError = (0, processors_1.parseBooleans)(core.getInput('continue-on-error'));
+            continueOnDecreasedCoverage = (0, processors_1.parseBooleans)(core.getInput('continue-on-decreased-coverage'));
             const debugMode = (0, processors_1.parseBooleans)(core.getInput('debug-mode'));
             const event = github.context.eventName;
             core.info(`Event is ${event}`);
@@ -124,10 +126,13 @@ function action() {
             core.setOutput('coverage-overall', parseFloat(((_d = project.overall.percentage) !== null && _d !== void 0 ? _d : 0).toFixed(2)));
             core.setOutput('coverage-changed-files', parseFloat(project['coverage-changed-files'].toFixed(2)));
             const skip = skipIfNoChanges && project.modules.length === 0;
+            const coverageDiff = (0, util_1.getCoverageDifference)(project.overall, project.changed);
             if (debugMode)
                 core.info(`skip: ${skip}`);
             if (debugMode)
                 core.info(`prNumber: ${prNumber}`);
+            if (debugMode)
+                core.info(`coverageDiff: ${coverageDiff}`);
             if (prNumber != null && !skip) {
                 const emoji = {
                     pass: passEmoji,
@@ -137,6 +142,9 @@ function action() {
                     overall: minCoverageOverall,
                     changed: minCoverageChangedFiles,
                 }, title, emoji), client, debugMode);
+            }
+            if (!continueOnDecreasedCoverage && coverageDiff < 0) {
+                core.setFailed(`Coverage has been dropped for ${parseFloat(coverageDiff.toFixed(2))}%`);
             }
         }
         catch (error) {
@@ -427,12 +435,13 @@ function getDetailedCoverage(counters, type) {
 /***/ }),
 
 /***/ 8523:
-/***/ ((__unused_webpack_module, exports) => {
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getTitle = exports.getPRComment = void 0;
+const util_1 = __nccwpck_require__(1597);
 function getPRComment(project, minCoverage, title, emoji) {
     const heading = getTitle(title);
     const overallTable = getOverallTable(project, minCoverage, emoji);
@@ -451,7 +460,7 @@ function getModuleTable(modules, minCoverage, emoji) {
     const tableStructure = '|:-|:-|:-:|';
     let table = `${tableHeader}\n${tableStructure}`;
     for (const module of modules) {
-        const coverageDifference = getCoverageDifference(module.overall, module.changed);
+        const coverageDifference = (0, util_1.getCoverageDifference)(module.overall, module.changed);
         renderRow(module.name, module.overall.percentage, coverageDifference, module.changed.percentage);
     }
     return table;
@@ -480,7 +489,7 @@ function getFileTable(project, minCoverage, emoji) {
             if (index !== 0) {
                 moduleName = '';
             }
-            const coverageDifference = getCoverageDifference(file.overall, file.changed);
+            const coverageDifference = (0, util_1.getCoverageDifference)(file.overall, file.changed);
             renderRow(moduleName, `[${file.name}](${file.url})`, file.overall.percentage, coverageDifference, file.changed.percentage, project.isMultiModule);
         }
     }
@@ -499,14 +508,9 @@ function getFileTable(project, minCoverage, emoji) {
         table = `${table}\n${row}`;
     }
 }
-function getCoverageDifference(overall, changed) {
-    const totalInstructions = overall.covered + overall.missed;
-    const missed = changed.missed;
-    return -(missed / totalInstructions) * 100;
-}
 function getOverallTable(project, minCoverage, emoji) {
     const overallStatus = getStatus(project.overall.percentage, minCoverage.overall, emoji);
-    const coverageDifference = getCoverageDifference(project.overall, project.changed);
+    const coverageDifference = (0, util_1.getCoverageDifference)(project.overall, project.changed);
     let coveragePercentage = `${formatCoverage(project.overall.percentage)}`;
     if (shouldShow(coverageDifference)) {
         coveragePercentage += ` **\`${formatCoverage(coverageDifference)}\`**`;
@@ -569,7 +573,7 @@ function toFloat(value) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getFilesWithCoverage = exports.getChangedLines = exports.debug = exports.TAG = void 0;
+exports.getCoverageDifference = exports.getFilesWithCoverage = exports.getChangedLines = exports.debug = exports.TAG = void 0;
 exports.TAG = {
     SELF: '$',
     SOURCE_FILE: 'sourcefile',
@@ -668,6 +672,12 @@ function getFilesWithCoverage(packages) {
     return files;
 }
 exports.getFilesWithCoverage = getFilesWithCoverage;
+function getCoverageDifference(overall, changed) {
+    const totalInstructions = overall.covered + overall.missed;
+    const missed = changed.missed;
+    return -(missed / totalInstructions) * 100;
+}
+exports.getCoverageDifference = getCoverageDifference;
 
 
 /***/ }),
