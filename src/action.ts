@@ -99,6 +99,10 @@ export async function action(): Promise<void> {
       'coverage-changed-files',
       parseFloat(project['coverage-changed-files'].toFixed(2))
     )
+    core.setOutput(
+      'coverage-changed-lines',
+      parseFloat((project.changed.percentage ?? 0).toFixed(2))
+    )
 
     const skip = skipIfNoChanges && project.modules.length === 0
     const coverageDiff = getCoverageDifference(project.overall, project.changed)

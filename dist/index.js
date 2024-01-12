@@ -54,7 +54,7 @@ const process_1 = __nccwpck_require__(8578);
 const render_1 = __nccwpck_require__(8523);
 const util_1 = __nccwpck_require__(1597);
 function action() {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     return __awaiter(this, void 0, void 0, function* () {
         let continueOnError = true;
         let continueOnDecreasedCoverage = true;
@@ -125,6 +125,7 @@ function action() {
                 core.info(`project: ${(0, util_1.debug)(project)}`);
             core.setOutput('coverage-overall', parseFloat(((_d = project.overall.percentage) !== null && _d !== void 0 ? _d : 0).toFixed(2)));
             core.setOutput('coverage-changed-files', parseFloat(project['coverage-changed-files'].toFixed(2)));
+            core.setOutput('coverage-changed-lines', parseFloat(((_e = project.changed.percentage) !== null && _e !== void 0 ? _e : 0).toFixed(2)));
             const skip = skipIfNoChanges && project.modules.length === 0;
             const coverageDiff = (0, util_1.getCoverageDifference)(project.overall, project.changed);
             if (debugMode)
@@ -526,7 +527,7 @@ function getOverallTable(project, minCoverage, emoji) {
         const filesChangedStatus = getStatus(changedLinesPercentage, minCoverage.changed, emoji);
         changedCoverageRow =
             '\n' +
-                `|Files changed|${formatCoverage(changedLinesPercentage)}|${filesChangedStatus}|` +
+                `|Lines changed|${formatCoverage(changedLinesPercentage)}|${filesChangedStatus}|` +
                 '\n<br>';
     }
     return `${tableHeader}\n${tableStructure}${changedCoverageRow}`;

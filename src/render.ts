@@ -151,7 +151,7 @@ function getOverallTable(
     )
     changedCoverageRow =
       '\n' +
-      `|Files changed|${formatCoverage(
+      `|Lines changed|${formatCoverage(
         changedLinesPercentage
       )}|${filesChangedStatus}|` +
       '\n<br>'
