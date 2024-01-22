@@ -138,21 +138,18 @@ function getOverallTable(
   const tableHeader = `|Overall Project|${coveragePercentage}|${overallStatus}|`
   const tableStructure = '|:-|:-|:-:|'
 
-  const missedLines = project.changed.missed
-  const coveredLines = project.changed.covered
-  const totalChangedLines = missedLines + coveredLines
   let changedCoverageRow = ''
-  if (totalChangedLines !== 0) {
-    const changedLinesPercentage = (coveredLines / totalChangedLines) * 100
+  const changedFilesPercentage = project['coverage-changed-files']
+  if (!Number.isNaN(changedFilesPercentage)) {
     const filesChangedStatus = getStatus(
-      changedLinesPercentage,
+      changedFilesPercentage,
       minCoverage.changed,
       emoji
     )
     changedCoverageRow =
       '\n' +
-      `|Lines changed|${formatCoverage(
-        changedLinesPercentage
+      `|Files changed|${formatCoverage(
+        changedFilesPercentage
       )}|${filesChangedStatus}|` +
       '\n<br>'
   }
