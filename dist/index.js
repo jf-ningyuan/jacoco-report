@@ -462,11 +462,11 @@ function getModuleTable(modules, minCoverage, emoji) {
     let table = `${tableHeader}\n${tableStructure}`;
     for (const module of modules) {
         const coverageDifference = (0, util_1.getCoverageDifference)(module.overall, module.changed);
-        renderRow(module.name, module.overall.percentage, coverageDifference, module.changed.percentage);
+        renderRow(module.name, module.overall.percentage, coverageDifference);
     }
     return table;
-    function renderRow(name, overallCoverage, coverageDiff, changedCoverage) {
-        const status = getStatus(changedCoverage, minCoverage.changed, emoji);
+    function renderRow(name, overallCoverage, coverageDiff) {
+        const status = getStatus(overallCoverage, minCoverage.changed, emoji);
         let coveragePercentage = `${formatCoverage(overallCoverage)}`;
         if (shouldShow(coverageDiff)) {
             coveragePercentage += ` **\`${formatCoverage(coverageDiff)}\`**`;
@@ -491,14 +491,14 @@ function getFileTable(project, minCoverage, emoji) {
                 moduleName = '';
             }
             const coverageDifference = (0, util_1.getCoverageDifference)(file.overall, file.changed);
-            renderRow(moduleName, `[${file.name}](${file.url})`, file.overall.percentage, coverageDifference, file.changed.percentage, project.isMultiModule);
+            renderRow(moduleName, `[${file.name}](${file.url})`, file.overall.percentage, coverageDifference, project.isMultiModule);
         }
     }
     return project.isMultiModule
         ? `<details>\n<summary>Files</summary>\n\n${table}\n\n</details>`
         : table;
-    function renderRow(moduleName, fileName, overallCoverage, coverageDiff, changedCoverage, isMultiModule) {
-        const status = getStatus(changedCoverage, minCoverage.changed, emoji);
+    function renderRow(moduleName, fileName, overallCoverage, coverageDiff, isMultiModule) {
+        const status = getStatus(overallCoverage, minCoverage.changed, emoji);
         let coveragePercentage = `${formatCoverage(overallCoverage)}`;
         if (shouldShow(coverageDiff)) {
             coveragePercentage += ` **\`${formatCoverage(coverageDiff)}\`**`;

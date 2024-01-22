@@ -1,4 +1,4 @@
-import {Coverage, Emoji, MinCoverage, Module, Project} from './models/project'
+import {Emoji, MinCoverage, Module, Project} from './models/project'
 import {getCoverageDifference} from './util'
 
 export function getPRComment(
@@ -35,22 +35,16 @@ function getModuleTable(
       module.overall,
       module.changed
     )
-    renderRow(
-      module.name,
-      module.overall.percentage,
-      coverageDifference,
-      module.changed.percentage
-    )
+    renderRow(module.name, module.overall.percentage, coverageDifference)
   }
   return table
 
   function renderRow(
     name: string,
     overallCoverage: number | undefined,
-    coverageDiff: number,
-    changedCoverage: number | undefined
+    coverageDiff: number
   ): void {
-    const status = getStatus(changedCoverage, minCoverage.changed, emoji)
+    const status = getStatus(overallCoverage, minCoverage.changed, emoji)
     let coveragePercentage = `${formatCoverage(overallCoverage)}`
     if (shouldShow(coverageDiff)) {
       coveragePercentage += ` **\`${formatCoverage(coverageDiff)}\`**`
@@ -88,7 +82,6 @@ function getFileTable(
         `[${file.name}](${file.url})`,
         file.overall.percentage,
         coverageDifference,
-        file.changed.percentage,
         project.isMultiModule
       )
     }
@@ -102,10 +95,9 @@ function getFileTable(
     fileName: string,
     overallCoverage: number | undefined,
     coverageDiff: number,
-    changedCoverage: number | undefined,
     isMultiModule: boolean
   ): void {
-    const status = getStatus(changedCoverage, minCoverage.changed, emoji)
+    const status = getStatus(overallCoverage, minCoverage.changed, emoji)
     let coveragePercentage = `${formatCoverage(overallCoverage)}`
     if (shouldShow(coverageDiff)) {
       coveragePercentage += ` **\`${formatCoverage(coverageDiff)}\`**`
